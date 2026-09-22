@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { pool } from "./db/pool";
+import productRoutes from "./routes/product.route";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +26,7 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
+app.use("/api/products", productRoutes);
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });
