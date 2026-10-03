@@ -1,7 +1,7 @@
-import crypto, { hash } from "node:crypto";
+import crypto from "node:crypto";
 import { pool } from "../db/pool";
 
-const SESSION_DURATION_TIME = 1000 * 60 * 60 * 24 * 7;
+export const SESSION_DURATION_TIME = 1000 * 60 * 60 * 24 * 7;
 
 function createSessionToken() {
   return crypto.randomBytes(32).toString("hex");
