@@ -34,7 +34,9 @@ export default function Login() {
       >
         <h1 className="text-3xl font-bold">Login</h1>
         <div className="mt-6">
-          <label className="mb-2 block text-sm font-medium">Email</label>
+          <label htmlFor="email" className="mb-2 block text-sm font-medium">
+            Email
+          </label>
           <input
             type="email"
             value={email}

@@ -13,7 +13,7 @@ export async function signup(req: Request, res: Response) {
   if (!parsed.success) {
     return res.status(400).json({
       success: false,
-      message: "Invlaid Email or Password",
+      message: "Invalid Email or Password",
     });
   }
   const { email, password } = parsed.data;
@@ -32,7 +32,7 @@ export async function signup(req: Request, res: Response) {
       user,
     });
   } catch (error) {
-    console.error("SignUp Failed", error);
+    console.error("Sign Up Failed", error);
 
     return res.status(500).json({
       success: false,
@@ -46,7 +46,7 @@ export async function login(req: Request, res: Response) {
   if (!parsed.success) {
     return res.status(400).json({
       success: false,
-      message: "Invlaid Email or Password",
+      message: "Invalid Email or Password",
     });
   }
   const { email, password } = parsed.data;
@@ -56,7 +56,7 @@ export async function login(req: Request, res: Response) {
     if (!findUser) {
       return res.status(401).json({
         success: false,
-        message: "Invlaid Email or Password",
+        message: "Invalid Email or Password",
       });
     }
 
@@ -72,13 +72,13 @@ export async function login(req: Request, res: Response) {
       });
     }
 
-    const session = createSession(findUser.id);
+    const session = await createSession(findUser.id);
 
-    res.cookie(SESSION_COOKIE, (await session).token, {
+    res.cookie(SESSION_COOKIE, session.token, {
       ...SESSION_COOKIE_OPTIONS,
       maxAge: SESSION_DURATION_TIME,
     });
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       user: {
         id: findUser.id,
@@ -103,7 +103,7 @@ export async function logout(req: Request, res: Response) {
     }
     res.clearCookie(SESSION_COOKIE, SESSION_COOKIE_OPTIONS);
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "Logged out",
     });

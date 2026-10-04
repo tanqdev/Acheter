@@ -14,8 +14,9 @@ const API_URL = "http://localhost:5000/api";
 interface AuthContextValue {
   user: user | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  logout: () => Promise<any>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: AuthProvideProps) {
       try {
         const response = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
+          cache: "no-store",
         });
 
         if (!response.ok) {
@@ -71,6 +73,25 @@ export function AuthProvider({ children }: AuthProvideProps) {
     }
     setUser(data.user);
   }
+
+  async function signup(email: string, password: string): Promise<void> {
+    const response = await fetch(`${API_URL}/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Sign Up Failed");
+    }
+  }
+
   // Ends the server-side session and clears the
   // authenticated user from React state.
   async function logout() {
@@ -89,6 +110,7 @@ export function AuthProvider({ children }: AuthProvideProps) {
         user,
         loading,
         login,
+        signup,
         logout,
       }}
     >

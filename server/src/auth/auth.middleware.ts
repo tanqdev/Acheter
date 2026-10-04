@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { getSession } from "./sessions";
 import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "./auth.constants";
-import { Session } from "node:inspector";
 
 // Shape of the authenticated user that will be attached to req.user.
 export interface AuthenticatedUser {
@@ -39,7 +38,7 @@ export async function requireAuth(
     if (!session) {
       // Remove the invalid session cookie from the browser
       res.clearCookie(SESSION_COOKIE, SESSION_COOKIE_OPTIONS);
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
         message: "Session Expired or Invalid",
       });
