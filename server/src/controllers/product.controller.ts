@@ -8,14 +8,14 @@ export async function getProducts(_req: Request, res: Response) {
   try {
     const products = await getAllProducts();
 
-    res.json({
+    return res.json({
       success: true,
       products,
     });
   } catch (error) {
-    console.error("Failed to fetch products");
+    console.error("Failed to fetch products", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch products",
     });
@@ -35,19 +35,19 @@ export async function getProduct(req: Request, res: Response) {
     const product = await getAllProductsByID(id);
 
     if (!product) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: "Product Not Found",
       });
     }
-    res.json({
+    return res.json({
       success: true,
       product,
     });
   } catch (error) {
     console.error("Failed to fetch product", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch product",
     });

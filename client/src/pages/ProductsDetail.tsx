@@ -14,6 +14,10 @@ export default function ProductDetails() {
 
   useEffect(() => {
     async function fetchProduct() {
+      setLoading(true);
+      setError("");
+      setProduct(null);
+
       try {
         const response = await fetch(`${API_URL}/products/${id}`);
 

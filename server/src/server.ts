@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { pool } from "./db/pool";
 import productRoutes from "./routes/product.route";
-
+import cartRoutes from "./routes/cart.route";
 import cookieParser from "cookie-parser";
 import authRoutes from "./auth/auth.routes";
 
@@ -36,6 +36,7 @@ app.get("/api/health", async (_req, res) => {
 });
 
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
 app.use("/api/auth", authRoutes);
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
