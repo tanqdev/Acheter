@@ -11,6 +11,8 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function fetchProduct() {
@@ -66,6 +68,40 @@ export default function ProductDetails() {
   }
 
   const outOfStock = product.stock === 0;
+  async function handleAddToCart() {
+    setAdding(true);
+    setMessage("");
+    try {
+      const response = await fetch(`${API_URL}/cart`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: currentProduct.id,
+          quantity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setMessage("Please log in to add items");
+        } else {
+          setMessage(data.message || "Could not add item");
+        }
+        return;
+      }
+      setMessage("Added to cart");
+    } catch (e) {
+      console.error("Failed to add to cart", e);
+      setMessage("Unable to reach the server");
+    } finally {
+      setAdding(false);
+    }
+  }
   const currentProduct = product;
 
   function increaseQuantity() {
@@ -120,7 +156,7 @@ export default function ProductDetails() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={decreaseQuantity}
-                  disabled={quantity === 1}
+                  disabled={quantity === 1 || adding}
                   className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   -
@@ -130,7 +166,7 @@ export default function ProductDetails() {
 
                 <button
                   onClick={increaseQuantity}
-                  disabled={quantity === product.stock}
+                  disabled={quantity === product.stock || adding}
                   className="rounded-lg border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   +
@@ -138,11 +174,26 @@ export default function ProductDetails() {
               </div>
 
               <button
-                disabled
+                type="button"
+                onClick={handleAddToCart}
+                disabled={adding}
                 className="mt-6 w-full rounded-lg bg-black px-6 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Add to Cart
+                {adding ? "Adding..." : "Add to Cart"}
               </button>
+
+              {message && (
+                <p
+                  role="status"
+                  className={`mt-2 text-sm ${
+                    message === "Added to cart"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
             </div>
           )}
 
