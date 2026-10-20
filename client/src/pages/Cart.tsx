@@ -257,10 +257,10 @@ export default function Cart() {
 
               <button
                 type="button"
-                disabled
-                className="mt-6 w-full rounded-lg bg-black px-4 py-3 text-white opacity-50"
+                onClick={() => navigate("/checkout")}
+                className="mt-6 w-full rounded-lg bg-black px-4 py-3 text-white cursor-pointer hover:opacity-80"
               >
-                Checkout — Coming Soon
+                Proceed To Checkout
               </button>
             </aside>
           </div>

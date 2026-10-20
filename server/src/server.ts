@@ -5,6 +5,7 @@ import productRoutes from "./routes/product.route";
 import cartRoutes from "./routes/cart.route";
 import cookieParser from "cookie-parser";
 import authRoutes from "./auth/auth.routes";
+import orderRoutes from "./routes/order.route";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.get("/api/health", async (_req, res) => {
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });
