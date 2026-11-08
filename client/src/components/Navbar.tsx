@@ -32,6 +32,9 @@ export default function Navbar() {
 
           {user ? (
             <>
+              <Link to="/orders" className="text-sm hover:text-blue-600">
+                Orders
+              </Link>
               <span className="hidden text-sm text-gray-600 sm:inline">
                 {user.email}
               </span>

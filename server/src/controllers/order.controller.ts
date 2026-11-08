@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createOrder } from "../services/order.services";
+import { createOrder, getUserOrders } from "../services/order.services";
 
 export async function checkout(req: Request, res: Response) {
   const userId = req.user?.id;
@@ -56,6 +56,33 @@ export async function checkout(req: Request, res: Response) {
     return res.status(500).json({
       success: false,
       message: "Failed to create order",
+    });
+  }
+}
+
+export async function getOrders(req: Request, res: Response) {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication Failed",
+    });
+  }
+
+  try {
+    const orders = await getUserOrders(userId);
+
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    console.error("Fetching orders failed", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
     });
   }
 }

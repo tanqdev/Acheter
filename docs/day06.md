@@ -4,16 +4,18 @@
 
 ### Objective
 
-Make checkout atomic and prevent multiple buyers from purchasing inventory that is no longer available.
+Make checkout atomic and prevent multiple buyers from purchasing inventory that is no longer available. Also prevent duplicate orders caused by simultaneous checkout submissions from the same user.
 
 ### What Was Built
 
 - Added a PostgreSQL transaction to the checkout service.
 - Used a single database client for all checkout queries.
 - Replaced the separate stock check with a conditional stock update.
+- Added PostgreSQL `SELECT FOR UPDATE` to serialize checkout requests from the same user.
 - Added rollback handling for failed checkout operations.
 - Ensured the database client is released in a `finally` block.
-- Standardized the insufficient-stock error returned to the frontend.
+- Standardized checkout errors returned to the frontend.
+- Created an automated concurrency test script covering competing buyers and duplicate checkout submissions.
 
 ### API Endpoint
 
@@ -23,17 +25,25 @@ The endpoint requires authentication and valid shipping details.
 
 ### Verification Results
 
-- TypeScript check passed using `npx tsc --noEmit`.
+- Backend TypeScript check passed using `npx tsc --noEmit`.
 - A successful checkout reduced product stock from 1 to 0.
 - A subsequent out-of-stock checkout returned the expected message: "One or more items no longer have enough stock."
 - The losing buyer's cart retained the item after the failed checkout.
-- Existing database records showed a successful order for product 15.
-
-**Verification limitation:** The observed results are consistent with correct inventory protection. A clean, controlled simultaneous-checkout test with recorded before-and-after order IDs has not yet been completed.
+- Controlled concurrency test with two buyers competing for one unit passed.
+- Exactly one checkout succeeded and one was rejected with `INSUFFICIENT_STOCK`.
+- Final stock was 0 and exactly one order was created.
+- Same-user simultaneous checkout test passed.
+- Exactly one checkout succeeded; the second encountered `CART_EMPTY`.
+- Final stock was 4 and exactly one order was created.
+- Automated test records were cleaned up successfully.
 
 ### Outcome
 
-Checkout now uses a transaction and a conditional stock update to protect inventory. The implementation is ready for further controlled concurrency testing.
+Checkout now uses PostgreSQL transactions, conditional stock updates, and same-user row locking to prevent inventory overselling and duplicate orders caused by simultaneous checkout requests.
+
+Both automated concurrency tests passed.
+
+---
 
 ## Part 2: Detailed Report
 
@@ -46,7 +56,9 @@ That implementation had two main risks:
 - Concurrent checkouts could both observe sufficient stock before either deducted it.
 - A failure partway through order creation could leave partial database changes.
 
-Day 6 addresses these issues using a PostgreSQL transaction.
+Simultaneous checkout requests from the same user could also process the same cart and create duplicate orders.
+
+Day 6 addresses these issues using PostgreSQL transactions, conditional updates, and row-level locking.
 
 ## 2. Transaction Setup
 
@@ -65,6 +77,24 @@ await client.query("BEGIN");
 All checkout queries use `client.query()` so they execute on the same connection and within the same transaction.
 
 Using `pool.query()` for a query inside this transaction could execute it on a different connection and outside the transaction.
+
+### 2.1 Same-User Checkout Locking
+
+At the beginning of the transaction, the service locks the authenticated user's database row:
+
+```sql
+SELECT id FROM users WHERE id = $1 FOR UPDATE;
+```
+
+This prevents simultaneous checkout transactions belonging to the same user from processing the same cart concurrently.
+
+The second transaction waits until the first transaction completes.
+
+After the first checkout commits and clears the cart, the second checkout proceeds and detects an empty cart.
+
+The service then throws `CART_EMPTY`, preventing duplicate order creation.
+
+This locking mechanism serializes checkout requests from the same user while allowing different users to check out concurrently.
 
 ## 3. Retrieving Cart Items
 
@@ -91,7 +121,9 @@ If the cart is empty, the service throws `CART_EMPTY`.
 
 ### 4.1 Why the previous approach was insufficient
 
-Checking stock in application code and deducting it in a separate query leaves a race condition. Two requests could read the same available stock before either performs its deduction.
+Checking stock in application code and deducting it in a separate query leaves a race condition.
+
+Two requests could read the same available stock before either performs its deduction.
 
 ### 4.2 The conditional update
 
@@ -107,7 +139,9 @@ RETURNING id;
 
 The parameters are the requested quantity and product ID.
 
-The update deducts stock only when enough inventory remains. PostgreSQL coordinates concurrent updates to the same row. Under the default `READ COMMITTED` isolation level, a waiting update re-evaluates its condition against the updated row version.
+The update deducts stock only when enough inventory remains.
+
+PostgreSQL coordinates concurrent updates to the same row. Under the default `READ COMMITTED` isolation level, a waiting update re-evaluates its condition against the updated row version.
 
 ### 4.3 Detecting insufficient stock
 
@@ -151,7 +185,13 @@ This query uses `client.query()` and participates in the transaction.
 
 ## 7. Inserting Order Items
 
-For each cart item, the service inserts a corresponding `order_items` row containing the order ID, product ID, product name, price, and quantity.
+For each cart item, the service inserts a corresponding `order_items` row containing:
+
+- Order ID
+- Product ID
+- Product name
+- Price
+- Quantity
 
 These inserts use the same database client and transaction.
 
@@ -164,7 +204,9 @@ DELETE FROM cart_items
 WHERE user_id = $1;
 ```
 
-Cart deletion is part of the transaction. If a later operation fails before commit, the deletion is rolled back along with the other changes.
+Cart deletion is part of the transaction.
+
+If a later operation fails before commit, the deletion is rolled back along with the other changes.
 
 ## 9. Commit, Rollback, and Connection Cleanup
 
@@ -210,9 +252,17 @@ The service uses these error identifiers:
 - `CART_EMPTY`
 - `INSUFFICIENT_STOCK`
 
-The controller maps `CART_EMPTY` to HTTP `400` and `INSUFFICIENT_STOCK` to HTTP `409`.
+The controller maps:
 
-The stock error must use the exact string `INSUFFICIENT_STOCK`. A different string, such as `INSUFFICIENT STOCK`, will not match the controller's condition and may result in an HTTP `500` response.
+| Error                | HTTP Status | Meaning                            |
+| -------------------- | ----------- | ---------------------------------- |
+| `CART_EMPTY`         | 400         | The user's cart is empty           |
+| `INSUFFICIENT_STOCK` | 409         | Requested inventory is unavailable |
+| Other errors         | 500         | Internal server error              |
+
+The stock error must use the exact string `INSUFFICIENT_STOCK`.
+
+A different string, such as `INSUFFICIENT STOCK`, will not match the controller's condition and may result in an HTTP `500` response.
 
 The frontend reads the backend response message and displays it when checkout fails.
 
@@ -248,17 +298,89 @@ The database showed that user 4 still had product 15, quantity 1, in the cart af
 
 This is consistent with rollback preserving the cart when checkout fails.
 
-### 11.5 Scope of concurrency verification
+### 11.5 Controlled Concurrency Testing
 
-The observed successful and failed checkouts are consistent with inventory protection. However, the database also contained historical orders for product 15, and the available records do not independently establish that the two checkout requests overlapped in time.
+An automated test script was created:
 
-A controlled concurrency test with two identified users, stock initialized to 1, and before-and-after order records remains a follow-up verification task.
+`server/scripts/concurrency-test.ts`
+
+The script uses `Promise.allSettled()` to execute checkout operations concurrently and verifies database state after each test.
+
+#### Test 1: Two Buyers Competing for One Unit
+
+Setup:
+
+- Two separate users.
+- Same product in both carts.
+- Initial stock: 1.
+- Both checkout operations executed concurrently.
+
+Results:
+
+| Metric               |               Result |
+| -------------------- | -------------------: |
+| Successful checkouts |                    1 |
+| Rejected checkouts   |                    1 |
+| Rejection reason     | `INSUFFICIENT_STOCK` |
+| Final stock          |                    0 |
+| Orders created       |                    1 |
+
+Result: **PASS**
+
+This confirms that conditional stock deduction prevents two different buyers from purchasing the same last unit.
+
+#### Test 2: Same User Double-Submits Checkout
+
+Setup:
+
+- One user.
+- Same product in the cart.
+- Initial stock: 5.
+- Two simultaneous checkout requests.
+
+Results:
+
+| Metric               |       Result |
+| -------------------- | -----------: |
+| Successful checkouts |            1 |
+| Rejected checkouts   |            1 |
+| Rejection reason     | `CART_EMPTY` |
+| Final stock          |            4 |
+| Orders created       |            1 |
+
+Result: **PASS**
+
+This confirms that same-user row locking prevents duplicate orders caused by simultaneous checkout submissions.
+
+### 11.6 Automated Test Cleanup
+
+The test script automatically removes the test orders, users, and products after execution.
+
+The terminal output confirmed:
+
+```text
+cleanup done
+
+RESULT: test1=PASS test2=PASS
+```
+
+Both controlled concurrency tests completed successfully.
+
+Note: These are service-level test results. The script calls `createOrder()` directly and does not independently verify HTTP response status codes.
 
 ## 12. Design Decisions and Rationale
 
-### Conditional update instead of explicit row locking
+### Conditional update instead of separate stock checking
 
-A conditional update combines the stock check and deduction in one SQL statement. It is simpler for the current requirement: deduct a requested quantity only if enough stock remains.
+A conditional update combines the stock check and deduction in one SQL statement.
+
+It is simpler for the current requirement: deduct a requested quantity only if enough stock remains.
+
+### Same-user row locking
+
+`SELECT FOR UPDATE` serializes simultaneous checkout requests belonging to the same user.
+
+This prevents multiple requests from processing the same cart before the first checkout clears it.
 
 ### Transactional checkout
 
@@ -274,10 +396,9 @@ The backend calculates the total using database prices rather than trusting clie
 
 ## 13. Known Limitations and Follow-Up Work
 
-- Complete a controlled simultaneous-checkout test with two distinct users and stock set to 1.
-- Verify that exactly one new order is created by the test and that the other checkout receives HTTP 409.
-- Test rollback after a failure occurring after stock has been deducted, confirming that the stock is restored and no partial order remains.
+- Test rollback after a failure occurring after stock has been deducted, confirming that stock is restored and no partial order remains.
 - Consider stronger validation for unusual database failures and transaction rollback errors.
+- Consider idempotency keys for more robust duplicate checkout handling across retries.
 - Continue with Day 7: order history.
 
 ## 14. Day 6 Completion Checklist
@@ -290,10 +411,19 @@ The backend calculates the total using database prices rather than trusting clie
 - [x] Successful checkout commits all changes together.
 - [x] Failed checkout rolls back changes.
 - [x] Database client is released in `finally`.
+- [x] Same-user checkout requests are serialized using `SELECT FOR UPDATE`.
 - [x] TypeScript check passes.
 - [x] Frontend displays the insufficient-stock message.
-- [ ] Controlled simultaneous-checkout test completed and documented.
+- [x] Controlled two-buyer concurrency test completed successfully.
+- [x] Exactly one order is created when two buyers compete for the last unit.
+- [x] Same-user simultaneous checkout test completed successfully.
+- [x] Duplicate order prevention verified.
+- [x] Automated test cleanup verified.
 
 ## Day 6 Outcome
 
-The checkout service now uses transactional database operations and a conditional stock update to prevent inventory from being oversold by concurrent requests. The TypeScript check and the observed success and failure paths passed. A controlled concurrency test remains necessary before marking the concurrency requirement fully verified.
+The checkout service now uses transactional database operations, conditional stock updates, and same-user row locking.
+
+The implementation protects inventory against overselling, prevents duplicate orders caused by simultaneous checkout submissions from the same user, and keeps order creation and cart updates atomic.
+
+Both automated concurrency tests passed, confirming the expected behavior under concurrent checkout requests.

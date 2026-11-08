@@ -15,6 +15,10 @@ export async function createOrder({
   const client: PoolClient = await pool.connect();
   try {
     await client.query("BEGIN");
+    // Prevent simultaneous checkout requests from the same user.
+    await client.query(`SELECT id FROM users WHERE id = $1 FOR UPDATE`, [
+      userId,
+    ]);
     const cartResult = await client.query(
       `
       SELECT
@@ -98,4 +102,38 @@ export async function createOrder({
   } finally {
     client.release();
   }
+}
+
+export async function getUserOrders(userId: number) {
+  const result = await pool.query(
+    `
+    SELECT
+      o.id,
+      o.total_cents,
+      o.status,
+      o.created_at,
+      o.shipping_name,
+      o.shipping_address,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'productId', oi.product_id,
+            'productName', oi.product_name,
+            'priceCents', oi.price_cents,
+            'quantity', oi.quantity
+          )
+          ORDER BY oi.id
+        ) FILTER (WHERE oi.id IS NOT NULL),
+        '[]'::json
+      ) AS items
+    FROM orders AS o
+    LEFT JOIN order_items AS oi ON oi.order_id = o.id
+    WHERE o.user_id = $1
+    GROUP BY o.id
+    ORDER BY o.created_at DESC, o.id DESC
+    `,
+    [userId],
+  );
+
+  return result.rows;
 }

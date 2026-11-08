@@ -3,9 +3,11 @@
 ## Part 1: Brief Summary
 
 ### Objective
+
 Build a persistent shopping cart for Acheter using the existing React + TypeScript frontend, Express + TypeScript backend, and PostgreSQL database. Users should be able to add products, view their cart, change quantities, and remove items. PostgreSQL remains the source of truth.
 
 ### What Was Built
+
 - Implemented cart database operations in `server/src/services/cart.services.ts`.
 - Added controller handlers for retrieving, adding, updating, and deleting cart items.
 - Registered authenticated cart routes under `/api/cart`.
@@ -18,16 +20,17 @@ Build a persistent shopping cart for Acheter using the existing React + TypeScri
 
 ### API Endpoints
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| `POST` | `/api/cart` | Add a product; repeated additions increment the existing quantity |
-| `GET` | `/api/cart` | Retrieve the authenticated user's cart with product details |
-| `PATCH` | `/api/cart/:productId` | Set a cart item's quantity |
-| `DELETE` | `/api/cart/:productId` | Remove a product from the authenticated user's cart |
+| Method   | Endpoint               | Purpose                                                           |
+| -------- | ---------------------- | ----------------------------------------------------------------- |
+| `POST`   | `/api/cart`            | Add a product; repeated additions increment the existing quantity |
+| `GET`    | `/api/cart`            | Retrieve the authenticated user's cart with product details       |
+| `PATCH`  | `/api/cart/:productId` | Set a cart item's quantity                                        |
+| `DELETE` | `/api/cart/:productId` | Remove a product from the authenticated user's cart               |
 
 All four routes use the existing `requireAuth` middleware.
 
 ### Verification Results
+
 - Adding a product from the frontend returned `200 OK`, `success: true`, and a `cartItem`.
 - The successful frontend request created a row for `user_id: 2`, `product_id: 15`, `quantity: 1`.
 - Repeating an API add request increased quantity from `2` to `4` rather than creating a duplicate row.
@@ -37,6 +40,7 @@ All four routes use the existing `requireAuth` middleware.
 - The user reported that product display, quantity/subtotal updates, removal, and persistence after refresh all passed.
 
 ### Outcome
+
 The cart backend and React interface are implemented, and the main user-facing flow was reported to pass. Checkout was not implemented on Day 4. Stock must be validated and deducted atomically during checkout; adding an item to the cart does not reserve inventory.
 
 ---
@@ -118,6 +122,7 @@ RETURNING id, user_id, product_id, quantity, created_at;
 Values are passed as query parameters rather than interpolated into SQL.
 
 How it works:
+
 1. It attempts to insert the user ID, product ID, and requested quantity.
 2. If no row exists for that user/product pair, PostgreSQL inserts one.
 3. If the unique constraint conflicts, PostgreSQL updates the existing row.
@@ -436,6 +441,7 @@ The shared Navbar is rendered on the Products and Cart pages.
 The final `client/src/pages/Products.tsx` imports React state/effect hooks, the `Product` type, `ProductCard`, and `Navbar`.
 
 The page continues to:
+
 1. Fetch products from `GET /api/products`.
 2. Check `response.ok`.
 3. Parse the JSON response.
@@ -471,6 +477,7 @@ The page also defines a response type containing `success`, `cartItems`, and an 
 ### 11.2 State
 
 The page tracks:
+
 - `items`: cart rows retrieved from the API.
 - `loading`: whether the initial cart fetch is in progress.
 - `error`: the current error message.
@@ -519,6 +526,7 @@ The order summary notes that shipping and taxes are not included. The Checkout b
 ### 11.7 Loading, empty, and error states
 
 The cart page supports:
+
 - `Loading your cart...`
 - An empty-cart message with a Browse Products link
 - An error state with Retry when the cart cannot load
@@ -529,30 +537,35 @@ The cart page supports:
 
 The user reported the following checks as passing:
 
-| Check | Result |
-|---|---|
-| Product appears in cart after adding | PASS |
-| Quantity and subtotal update | PASS |
-| Removing an item works | PASS |
-| Cart persists after refresh | PASS |
+| Check                                | Result |
+| ------------------------------------ | ------ |
+| Product appears in cart after adding | PASS   |
+| Quantity and subtotal update         | PASS   |
+| Removing an item works               | PASS   |
+| Cart persists after refresh          | PASS   |
 
 Together with the API tests, these checks cover the main Day 4 cart workflow.
 
 ## 13. Design Decisions and Rationale
 
 ### PostgreSQL is the source of truth
+
 The cart page retrieves persisted data rather than treating React state as the only copy. This supports persistence after refresh and allows the backend to enforce ownership and validation.
 
 ### Server-side ownership
+
 The controller uses `req.user.id` from authentication middleware. Queries for reading, updating, and deleting include the user ID. The client cannot select another user's cart by sending a different user ID in JSON.
 
 ### Parameterized SQL
+
 Database values are passed as query parameters such as `$1`, `$2`, and `$3`, rather than concatenated into SQL strings.
 
 ### Adding to cart does not reserve inventory
+
 The add operation writes only to `cart_items`. Multiple customers may have the same product in their carts. Checkout must validate inventory and deduct stock atomically before confirming an order.
 
 ### Checkout remains separate
+
 The displayed subtotal is not a final order amount. A future checkout endpoint must re-read current prices and stock on the server, validate quantities, and calculate the order from trusted database values.
 
 ## 14. Known Limitations and Follow-Up Work
