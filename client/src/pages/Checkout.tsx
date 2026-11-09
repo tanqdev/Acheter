@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import { formatCents } from "@/utils/formatPrice";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -9,7 +10,7 @@ interface CartItem {
   product_id: number;
   quantity: number;
   name: string;
-  price_cents: number;
+  price_cents: string;
   stock: number;
 }
 
@@ -59,8 +60,8 @@ export default function Checkout() {
   }, [navigate]);
 
   const totalCents = items.reduce(
-    (total, item) => total + item.price_cents * item.quantity,
-    0,
+    (total, item) => total + BigInt(item.price_cents) * BigInt(item.quantity),
+    0n,
   );
 
   async function handleCheckout(event: React.FormEvent<HTMLFormElement>) {
@@ -158,12 +159,14 @@ export default function Checkout() {
                         Quantity: {item.quantity}
                       </p>
                       <p className="mt-1 text-sm text-gray-500">
-                        ₹{(item.price_cents / 100).toFixed(2)} each
+                        {formatCents(item.price_cents)} each
                       </p>
                     </div>
 
                     <p className="font-semibold">
-                      ₹{((item.price_cents * item.quantity) / 100).toFixed(2)}
+                      {formatCents(
+                        BigInt(item.price_cents) * BigInt(item.quantity),
+                      )}
                     </p>
                   </div>
 
@@ -249,9 +252,7 @@ export default function Checkout() {
 
               <div className="mt-4 flex justify-between gap-4">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-semibold">
-                  ₹{(totalCents / 100).toFixed(2)}
-                </span>
+                <span className="font-semibold">{formatCents(totalCents)}</span>
               </div>
 
               <p className="mt-3 text-xs text-gray-500">

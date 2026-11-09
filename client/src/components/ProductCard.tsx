@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import type { Product } from "../types/product";
+import { formatCents } from "../utils/formatPrice";
 
 interface ProductCardProps {
   product: Product;
@@ -71,7 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-4 flex items-center justify-between">
           <span className="text-lg font-bold">
-            ₹{(product.price_cents / 100).toFixed(2)}
+            {formatCents(product.price_cents)}
           </span>
 
           {outOfStock && (

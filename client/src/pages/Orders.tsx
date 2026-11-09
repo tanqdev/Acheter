@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import { formatCents } from "@/utils/formatPrice";
 
 const API_URL = "http://localhost:5000/api";
 
 interface OrderItem {
   productId: number;
   productName: string;
-  priceCents: number;
+  priceCents: string;
   quantity: number;
 }
 
 interface Order {
   id: number;
-  total_cents: number;
+  total_cents: string;
   status: string;
   created_at: string;
   shipping_name: string;
@@ -118,7 +119,9 @@ export default function Orders() {
                       </div>
 
                       <p className="font-medium">
-                        ₹{((item.priceCents * item.quantity) / 100).toFixed(2)}
+                        {formatCents(
+                          BigInt(item.priceCents) * BigInt(item.quantity),
+                        )}
                       </p>
                     </div>
                   ))}
@@ -126,7 +129,7 @@ export default function Orders() {
 
                 <div className="mt-5 border-t border-gray-100 pt-4">
                   <p className="font-semibold">
-                    Total: ₹{(order.total_cents / 100).toFixed(2)}
+                    Total: {formatCents(order.total_cents)}
                   </p>
 
                   <div className="mt-3 text-sm text-gray-500">

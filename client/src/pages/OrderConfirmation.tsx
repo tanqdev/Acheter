@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router";
 import Navbar from "../components/Navbar";
+import { formatCents } from "@/utils/formatPrice";
 
 interface Order {
   id: number;
-  total_cents: number;
+  total_cents: string;
   status: string;
   created_at: string;
 }
@@ -33,8 +34,8 @@ export default function OrderConfirmation() {
                   <span className="font-medium">Order ID:</span> #{order.id}
                 </p>
                 <p>
-                  <span className="font-medium">Total:</span> ₹
-                  {(order.total_cents / 100).toFixed(2)}
+                  <span className="font-medium">Total:</span>
+                  {formatCents(order.total_cents)}
                 </p>
                 <p>
                   <span className="font-medium">Status:</span> {order.status}

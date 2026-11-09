@@ -37,6 +37,12 @@ export async function checkout(req: Request, res: Response) {
       order,
     });
   } catch (error) {
+    if (error instanceof Error && error.message === "ORDER_TOTAL_TOO_LARGE") {
+      return res.status(400).json({
+        success: false,
+        message: "Order total exceeds the supported limit",
+      });
+    }
     if (error instanceof Error && error.message === "CART_EMPTY") {
       return res.status(400).json({
         success: false,

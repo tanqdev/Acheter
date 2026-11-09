@@ -5,6 +5,7 @@ import {
   getCart,
   updateCartQuantity,
 } from "../services/cart.services";
+import { object } from "zod";
 
 export async function getCartItems(req: Request, res: Response) {
   const userId = req.user?.id;
@@ -46,7 +47,8 @@ export async function addCartItems(req: Request, res: Response) {
     !Number.isInteger(productId) ||
     productId <= 0 ||
     !Number.isInteger(quantity) ||
-    quantity <= 0
+    quantity <= 0 ||
+    quantity > 2147483647
   ) {
     return res.status(400).json({
       success: false,
@@ -61,6 +63,17 @@ export async function addCartItems(req: Request, res: Response) {
       cartItem,
     });
   } catch (e) {
+    if (
+      typeof e === "object" &&
+      e != null &&
+      "code" in e &&
+      e.code == "23503"
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
     console.error("Failed to add item to cart", e);
     return res
       .status(500)
@@ -84,7 +97,8 @@ export async function updateCartItems(req: Request, res: Response) {
     !Number.isInteger(productId) ||
     productId <= 0 ||
     !Number.isInteger(quantity) ||
-    quantity <= 0
+    quantity <= 0 ||
+    quantity > 2147483647
   ) {
     return res.status(400).json({
       success: false,

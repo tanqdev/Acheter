@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Product } from "../types/product";
+import { formatCents } from "@/utils/formatPrice";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -68,6 +69,7 @@ export default function ProductDetails() {
   }
 
   const outOfStock = product.stock === 0;
+  const currentProduct = product;
   async function handleAddToCart() {
     setAdding(true);
     setMessage("");
@@ -102,7 +104,6 @@ export default function ProductDetails() {
       setAdding(false);
     }
   }
-  const currentProduct = product;
 
   function increaseQuantity() {
     setQuantity((current) => Math.min(current + 1, currentProduct.stock));
@@ -132,7 +133,7 @@ export default function ProductDetails() {
           <h1 className="text-4xl font-bold">{product.name}</h1>
 
           <p className="mt-4 text-2xl font-semibold">
-            ₹{(product.price_cents / 100).toFixed(2)}
+            {formatCents(product.price_cents)}
           </p>
 
           <p className="mt-6 leading-7 text-gray-600">{product.description}</p>

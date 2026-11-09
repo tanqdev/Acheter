@@ -56,11 +56,18 @@ export async function createOrder({
       }
     }
 
-    const totalCents = items.reduce(
-      (total, item) => total + item.price_cents * item.quantity,
-      0,
-    );
+    const totalCents = items.reduce((total, item) => {
+      const price = BigInt(item.price_cents);
+      const quantity = BigInt(item.quantity);
 
+      return total + price * quantity;
+    }, 0n);
+
+    const MAX_BIGINT = 9223372036854775807n;
+
+    if (totalCents > MAX_BIGINT) {
+      throw new Error("ORDER_TOTAL_TOO_LARGE");
+    }
     const orderResult = await client.query(
       `
       INSERT INTO orders (
@@ -72,7 +79,7 @@ export async function createOrder({
       VALUES ($1, $2, $3, $4)
       RETURNING id, total_cents, status, created_at
       `,
-      [userId, totalCents, shippingName, shippingAddress],
+      [userId, totalCents.toString(), shippingName, shippingAddress],
     );
 
     const order = orderResult.rows[0];
@@ -109,7 +116,7 @@ export async function getUserOrders(userId: number) {
     `
     SELECT
       o.id,
-      o.total_cents,
+      o.total_cents::text AS total_cents,
       o.status,
       o.created_at,
       o.shipping_name,
@@ -119,7 +126,7 @@ export async function getUserOrders(userId: number) {
           json_build_object(
             'productId', oi.product_id,
             'productName', oi.product_name,
-            'priceCents', oi.price_cents,
+            'priceCents', oi.price_cents::text,
             'quantity', oi.quantity
           )
           ORDER BY oi.id
