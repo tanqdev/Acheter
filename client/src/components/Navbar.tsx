@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -12,19 +13,23 @@ import {
   ShoppingCart,
   LogIn,
   LogOut,
+  Menu,
   UserPlus,
   Sun,
   MoonIcon,
+  X,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   async function handleLogout() {
     try {
       await logout();
+      setMobileMenuOpen(false);
       navigate("/login");
     } catch (error) {
       console.error("Logout failed", error);
@@ -39,12 +44,12 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           to="/"
-          className="group flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl"
+          className="group flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight sm:text-2xl"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 transition-colors group-hover:bg-blue-100 dark:bg-zinc-800 dark:group-hover:bg-blue-950">
             <ShoppingBag className="h-5 w-5 transition-transform group-hover:scale-110" />
           </span>
-          <span className="hidden sm:inline">Acheter</span>
+          <span>Acheter</span>
         </Link>
         {/* Navigation */}
         <div className="flex items-center gap-1 sm:gap-6">
@@ -61,13 +66,6 @@ export default function Navbar() {
               <Sun className="h-5 w-5" />
             )}
           </button>
-          <Link
-            to="/cart"
-            className="rounded-xl p-2 transition-colors hover:bg-gray-100 sm:hidden dark:hover:bg-zinc-800"
-            aria-label="View cart"
-          >
-            <ShoppingCart className="h-5 w-5" />
-          </Link>
           <NavigationMenu className="hidden sm:block">
             <NavigationMenuList>
               <NavigationMenuItem>
@@ -113,10 +111,10 @@ export default function Navbar() {
           </NavigationMenu>
 
           {user ? (
-            <>
+            <div className="hidden items-center gap-6 sm:flex">
               <Link
                 to="/orders"
-                className="hidden items-center gap-2 text-sm font-medium text-black transition-colors hover:text-blue-700 sm:flex dark:text-white dark:hover:text-blue-400"
+                className="flex items-center gap-2 text-sm font-medium text-black transition-colors hover:text-blue-700 dark:text-white dark:hover:text-blue-400"
               >
                 Orders
               </Link>
@@ -128,15 +126,13 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-2 text-sm font-medium transition-colors cursor-pointer hover:bg-blue-600 hover:text-white sm:px-4 dark:border-gray-700 dark:hover:bg-blue-600"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition-colors cursor-pointer hover:bg-blue-600 hover:text-white dark:border-gray-700 dark:hover:bg-blue-600"
               >
-                <LogOut className="h-4 w-4 sm:hidden" />
-                <span className="hidden sm:inline">Logout</span>
-                <span className="sr-only sm:hidden">Logout</span>
+                Logout
               </button>
-            </>
+            </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-3 sm:flex">
               <Link
                 to="/login"
                 className="flex items-center gap-2 text-sm font-medium transition-colors px-4 py-2 rounded-lg hover:text-white hover:bg-blue-700 dark:hover:bg-blue-600"
@@ -154,8 +150,88 @@ export default function Navbar() {
               </Link>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="rounded-xl border border-gray-200/80 bg-white/50 p-2 transition-colors hover:bg-gray-100 sm:hidden dark:border-zinc-700 dark:bg-zinc-800/50 dark:hover:bg-zinc-700"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl dark:border-zinc-700 dark:bg-zinc-950 sm:hidden">
+          <Link
+            to="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            Products
+          </Link>
+          <Link
+            to="/cart"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            Cart
+          </Link>
+
+          <div className="my-1 border-t border-gray-200 dark:border-zinc-800" />
+
+          {user ? (
+            <>
+              <Link
+                to="/orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800"
+              >
+                <ShoppingBag className="h-5 w-5" />
+                Orders
+              </Link>
+              <p className="truncate px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                {user.email}
+              </p>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+              >
+                <LogOut className="h-5 w-5" />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800"
+              >
+                <LogIn className="h-5 w-5" />
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800"
+              >
+                <UserPlus className="h-5 w-5" />
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

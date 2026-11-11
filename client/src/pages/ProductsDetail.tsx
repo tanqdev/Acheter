@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import type { Product } from "../types/product";
 import { formatCents } from "@/utils/formatPrice";
 import { API_URL } from "@/lib/api";
+import Navbar from "@/components/Navbar";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -128,15 +129,17 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
-      <Link
-        to="/"
-        className="mb-8 inline-block text-sm text-gray-600 hover:text-black"
-      >
-        ← Back to Products
-      </Link>
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <Link
+          to="/"
+          className="mb-8 inline-block text-sm text-gray-600 hover:text-black"
+        >
+          ← Back to Products
+        </Link>
 
-      <div className="grid gap-7 md:grid-cols-2 md:gap-10">
+        <div className="grid gap-7 md:grid-cols-2 md:gap-10">
         <div>
           <div
             className="relative flex h-80 items-center justify-center overflow-hidden rounded-xl bg-gray-100 sm:h-96 dark:bg-zinc-800"
@@ -299,7 +302,8 @@ export default function ProductDetails() {
             </button>
           )}
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }
