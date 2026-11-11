@@ -1,10 +1,9 @@
-// Import React APIs/hooks that we need for authentication state
 import {
   createContext,
   useContext,
   useEffect,
   useState,
-  type ReactNode, // ReactNode is a TypeScript type, it represents things that React can render as children
+  type ReactNode,
 } from "react";
 
 import type { user } from "../types/auth";
@@ -25,11 +24,9 @@ interface AuthProvideProps {
 }
 
 export function AuthProvider({ children }: AuthProvideProps) {
-  // To store current User
   const [user, setUser] = useState<user | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check The Backend Session When The App Starts
   useEffect(() => {
     async function loadUser() {
       try {
@@ -42,18 +39,20 @@ export function AuthProvider({ children }: AuthProvideProps) {
           setUser(null);
           return;
         }
+
         const data = await response.json();
         setUser(data.user);
-      } catch (e) {
-        console.error("Failed to Load Session", e);
+      } catch (error) {
+        console.error("Failed to Load Session", error);
         setUser(null);
       } finally {
         setLoading(false);
       }
     }
+
     loadUser();
   }, []);
-  //Sends Login creds to backend and update React State on Successful login
+
   async function login(email: string, password: string): Promise<void> {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
@@ -61,15 +60,15 @@ export function AuthProvider({ children }: AuthProvideProps) {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      body: JSON.stringify({ email, password }),
     });
+
     const data = await response.json();
+
     if (!response.ok) {
       throw new Error(data.message || "Login Failed");
     }
+
     setUser(data.user);
   }
 
@@ -79,11 +78,10 @@ export function AuthProvider({ children }: AuthProvideProps) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
     });
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -91,18 +89,19 @@ export function AuthProvider({ children }: AuthProvideProps) {
     }
   }
 
-  // Ends the server-side session and clears the
-  // authenticated user from React state.
-  async function logout() {
+  async function logout(): Promise<void> {
     const response = await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
+
     if (!response.ok) {
       throw new Error("Failed to Logout");
     }
+
     setUser(null);
   }
+
   return (
     <AuthContext.Provider
       value={{
@@ -120,8 +119,10 @@ export function AuthProvider({ children }: AuthProvideProps) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth Must Be Used Inside AuthProvider");
   }
+
   return context;
 }

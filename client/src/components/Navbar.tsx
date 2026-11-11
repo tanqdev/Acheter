@@ -167,6 +167,10 @@ export default function Navbar() {
         </div>
       </div>
 
+      <p className="border-t border-gray-200/70 px-3 py-1.5 text-center text-[11px] font-medium text-gray-500 dark:border-zinc-700/70 dark:text-gray-400">
+        Demo storefront — orders are not processed or fulfilled.
+      </p>
+
       {mobileMenuOpen && (
         <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl dark:border-zinc-700 dark:bg-zinc-950 sm:hidden">
           <Link
