@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import type { Product } from "../types/product";
 import ProductCard from "../components/ProductCard";
 import Navbar from "@/components/Navbar";
-
-const API_URL = "http://localhost:5000/api";
+import ShopHero from "./SuperHero";
+import { API_URL } from "@/lib/api";
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -54,6 +54,7 @@ export default function Products() {
   return (
     <>
       <Navbar />
+      <ShopHero />
       <main className="mx-auto max-w-7xl px-6 py-10">
         <h1 className="mb-8 text-3xl font-bold">Products</h1>
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

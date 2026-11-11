@@ -8,8 +8,7 @@ import {
 } from "react";
 
 import type { user } from "../types/auth";
-
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "../lib/api";
 
 interface AuthContextValue {
   user: user | null;

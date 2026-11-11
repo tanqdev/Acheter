@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import Navbar from "../components/Navbar";
 import { formatCents } from "@/utils/formatPrice";
-
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 interface CartItem {
   id: number;
@@ -143,23 +142,27 @@ export default function Cart() {
         <h1 className="mb-8 text-3xl font-bold">Your Cart</h1>
 
         {loading ? (
-          <p>Loading your cart...</p>
+          <p className="text-gray-700 dark:text-gray-300">
+            Loading your cart...
+          </p>
         ) : error && items.length === 0 ? (
           <div>
             <p className="text-red-600">{error}</p>
             <button
               onClick={() => void fetchCart()}
-              className="mt-3 rounded-lg bg-black px-4 py-2 text-white"
+              className="mt-3 rounded-lg bg-black px-4 py-2 text-white transition hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Retry
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-lg text-gray-600">Your cart is empty.</p>
+          <div className="mx-auto w-full max-w-md rounded-xl border border-gray-200 bg-white/65 p-6 text-center shadow-sm backdrop-blur-md dark:border-zinc-700 dark:bg-zinc-900/65">
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Your cart is empty.
+            </p>
             <Link
               to="/"
-              className="mt-4 inline-block rounded-lg bg-black px-5 py-2 text-white hover:bg-gray-800"
+              className="mt-4 inline-block rounded-lg bg-black px-5 py-2 text-white transition hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Browse Products
             </Link>
@@ -170,21 +173,21 @@ export default function Cart() {
               {items.map((item) => (
                 <article
                   key={item.product_id}
-                  className="flex flex-col gap-4 rounded-xl border border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white/65 p-5 shadow-sm backdrop-blur-md transition-colors sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700 dark:bg-zinc-900/65"
                 >
                   <div>
                     <Link
                       to={`/products/${item.product_id}`}
-                      className="font-semibold hover:text-blue-600"
+                      className="font-semibold text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
                     >
                       {item.name}
                     </Link>
 
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       {formatCents(item.price_cents)} each
                     </p>
 
-                    <p className="mt-1 font-medium">
+                    <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">
                       Subtotal: ₹
                       {formatCents(
                         BigInt(item.price_cents) * BigInt(item.quantity),
@@ -192,7 +195,7 @@ export default function Cart() {
                     </p>
 
                     {item.quantity > item.stock && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                         Only {item.stock} currently in stock.
                       </p>
                     )}
@@ -208,13 +211,15 @@ export default function Cart() {
                       onClick={() =>
                         void updateQuantity(item.product_id, item.quantity - 1)
                       }
-                      className="h-9 w-9 rounded border disabled:opacity-40"
+                      className="h-9 w-9 rounded border border-gray-300 bg-white/50 text-gray-900 transition hover:bg-gray-100 disabled:opacity-40 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                       aria-label={`Decrease quantity of ${item.name}`}
                     >
                       −
                     </button>
 
-                    <span className="min-w-6 text-center">{item.quantity}</span>
+                    <span className="min-w-6 text-center text-gray-900 dark:text-gray-100">
+                      {item.quantity}
+                    </span>
 
                     <button
                       type="button"
@@ -225,7 +230,7 @@ export default function Cart() {
                       onClick={() =>
                         void updateQuantity(item.product_id, item.quantity + 1)
                       }
-                      className="h-9 w-9 rounded border disabled:opacity-40"
+                      className="h-9 w-9 rounded border border-gray-300 bg-white/50 text-gray-900 transition hover:bg-gray-100 disabled:opacity-40 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                       aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
@@ -235,7 +240,7 @@ export default function Cart() {
                       type="button"
                       disabled={updatingProductId === item.product_id}
                       onClick={() => void removeItem(item.product_id)}
-                      className="ml-1 text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-40"
+                      className="ml-1 text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-40 dark:text-red-400 dark:hover:text-red-300"
                     >
                       Remove
                     </button>
@@ -244,22 +249,28 @@ export default function Cart() {
               ))}
             </section>
 
-            <aside className="h-fit rounded-xl border border-gray-200 p-5">
-              <h2 className="text-lg font-semibold">Order Summary</h2>
+            <aside className="h-fit rounded-xl border border-gray-200 bg-white/65 p-5 shadow-sm backdrop-blur-md dark:border-zinc-700 dark:bg-zinc-900/65">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Order Summary
+              </h2>
 
               <div className="mt-4 flex justify-between gap-4">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-semibold">{formatCents(totalCents)}</span>
+                <span className="text-gray-600 dark:text-gray-300">
+                  Subtotal
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {formatCents(totalCents)}
+                </span>
               </div>
 
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                 Shipping and taxes are not included.
               </p>
 
               <button
                 type="button"
                 onClick={() => navigate("/checkout")}
-                className="mt-6 w-full rounded-lg bg-black px-4 py-3 text-white cursor-pointer hover:opacity-80"
+                className="mt-6 w-full cursor-pointer rounded-lg bg-black px-4 py-3 text-white transition hover:opacity-80 dark:bg-white dark:text-black"
               >
                 Proceed To Checkout
               </button>
@@ -268,7 +279,10 @@ export default function Cart() {
         )}
 
         {error && items.length > 0 && (
-          <p role="alert" className="mt-4 text-sm text-red-600">
+          <p
+            role="alert"
+            className="mt-4 text-sm text-red-600 dark:text-red-400"
+          >
             {error}
           </p>
         )}

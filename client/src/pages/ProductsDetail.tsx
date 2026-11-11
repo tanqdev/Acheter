@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Product } from "../types/product";
 import { formatCents } from "@/utils/formatPrice";
-
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -14,12 +13,20 @@ export default function ProductDetails() {
   const [error, setError] = useState("");
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState("");
+  const [imageError, setImageError] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<"primary" | "hover">(
+    "primary",
+  );
+  const [isImageHovered, setIsImageHovered] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
       setLoading(true);
       setError("");
       setProduct(null);
+      setImageError(false);
+      setSelectedImage("primary");
+      setIsImageHovered(false);
 
       try {
         const response = await fetch(`${API_URL}/products/${id}`);
@@ -70,6 +77,13 @@ export default function ProductDetails() {
 
   const outOfStock = product.stock === 0;
   const currentProduct = product;
+  const hasImage = Boolean(product.image_url) && !imageError;
+  const hasHoverImage =
+    Boolean(product.hover_image_url) &&
+    product.hover_image_url !== product.image_url &&
+    hasImage;
+  const showHoverImage =
+    hasHoverImage && (selectedImage === "hover" || isImageHovered);
   async function handleAddToCart() {
     setAdding(true);
     setMessage("");
@@ -123,10 +137,88 @@ export default function ProductDetails() {
       </Link>
 
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="flex h-96 items-center justify-center rounded-xl bg-gray-100">
-          <span className="text-7xl font-bold text-gray-400">
-            {product.name.charAt(0)}
-          </span>
+        <div>
+          <div
+            className="relative flex h-96 items-center justify-center overflow-hidden rounded-xl bg-gray-100 dark:bg-zinc-800"
+            onMouseEnter={() => setIsImageHovered(true)}
+            onMouseLeave={() => setIsImageHovered(false)}
+          >
+            {hasImage ? (
+              <>
+                <img
+                  src={product.image_url!}
+                  alt={showHoverImage ? "" : product.name}
+                  aria-hidden={showHoverImage}
+                  width={1024}
+                  height={1024}
+                  onError={() => setImageError(true)}
+                  className={`absolute inset-0 h-full w-full object-contain p-6 transition-opacity duration-300 ${
+                    showHoverImage ? "opacity-0" : "opacity-100"
+                  }`}
+                />
+
+                {hasHoverImage && (
+                  <img
+                    src={product.hover_image_url!}
+                    alt={showHoverImage ? `${product.name} alternate view` : ""}
+                    aria-hidden={!showHoverImage}
+                    width={1024}
+                    height={1024}
+                    onError={() => setImageError(true)}
+                    className={`absolute inset-0 h-full w-full object-contain p-6 transition-opacity duration-300 ${
+                      showHoverImage ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                )}
+              </>
+            ) : (
+              <span className="text-7xl font-bold text-gray-400">
+                {product.name.charAt(0)}
+              </span>
+            )}
+          </div>
+
+          {hasHoverImage && (
+            <div className="mt-3 flex gap-3" aria-label="Product image views">
+              <button
+                type="button"
+                onClick={() => setSelectedImage("primary")}
+                aria-pressed={selectedImage === "primary"}
+                className={`h-16 w-16 overflow-hidden rounded-lg border-2 bg-gray-100 p-1 dark:bg-zinc-800 ${
+                  selectedImage === "primary"
+                    ? "border-blue-600"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={product.image_url!}
+                  alt="Primary product view"
+                  width={1024}
+                  height={1024}
+                  className="h-full w-full object-contain"
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedImage("hover")}
+                aria-pressed={selectedImage === "hover"}
+                className={`h-16 w-16 overflow-hidden rounded-lg border-2 bg-gray-100 p-1 dark:bg-zinc-800 ${
+                  selectedImage === "hover"
+                    ? "border-blue-600"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={product.hover_image_url!}
+                  alt="Alternate product view"
+                  width={1024}
+                  height={1024}
+                  className="h-full w-full object-contain"
+                />
+              </button>
+            </div>
+          )}
         </div>
 
         <div>

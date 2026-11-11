@@ -11,6 +11,8 @@ CREATE TABLE products (
     description TEXT,
     price_cents BIGINT NOT NULL CHECK (price_cents >= 0),
     stock INTEGER NOT NULL CHECK (stock >= 0),
+    image_url TEXT,
+    hover_image_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
