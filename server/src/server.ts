@@ -10,16 +10,26 @@ import orderRoutes from "./routes/order.route";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = [
+// Honor comma-separated deployed frontend URLs while retaining local options.
+const configuredOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  process.env.CLIENT_URL,
-].filter(Boolean);
+  ...configuredOrigins,
+]);
+
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.has(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
