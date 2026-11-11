@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   LogIn,
+  LogOut,
   UserPlus,
   Sun,
   MoonIcon,
@@ -31,22 +32,22 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-3 z-50 mx-auto w-[calc(100%-2rem)] max-w-7xl rounded-2xl border border-gray-200/70 bg-white/75 text-gray-900 shadow-lg shadow-black/5 backdrop-blur-xl transition-colors dark:border-zinc-700/70 dark:bg-zinc-950/75 dark:text-white">
+    <nav className="sticky top-2 z-50 mx-auto w-[calc(100%-1rem)] max-w-7xl rounded-2xl border border-gray-200/70 bg-white/75 text-gray-900 shadow-lg shadow-black/5 backdrop-blur-xl transition-colors sm:top-3 sm:w-[calc(100%-2rem)] dark:border-zinc-700/70 dark:bg-zinc-950/75 dark:text-white">
       {" "}
-      <div className="flex h-16 items-center justify-between px-6">
+      <div className="flex h-14 items-center justify-between px-3 sm:h-16 sm:px-6">
         {" "}
         {/* Logo */}
         <Link
           to="/"
-          className="group flex items-center gap-2 text-2xl font-bold tracking-tight"
+          className="group flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 transition-colors group-hover:bg-blue-100 dark:bg-zinc-800 dark:group-hover:bg-blue-950">
             <ShoppingBag className="h-5 w-5 transition-transform group-hover:scale-110" />
           </span>
-          Acheter
+          <span className="hidden sm:inline">Acheter</span>
         </Link>
         {/* Navigation */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-1 sm:gap-6">
           <button
             type="button"
             onClick={toggleTheme}
@@ -60,7 +61,14 @@ export default function Navbar() {
               <Sun className="h-5 w-5" />
             )}
           </button>
-          <NavigationMenu>
+          <Link
+            to="/cart"
+            className="rounded-xl p-2 transition-colors hover:bg-gray-100 sm:hidden dark:hover:bg-zinc-800"
+            aria-label="View cart"
+          >
+            <ShoppingCart className="h-5 w-5" />
+          </Link>
+          <NavigationMenu className="hidden sm:block">
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent">
@@ -120,9 +128,11 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition-colors cursor-pointer hover:bg-blue-600 hover:text-white dark:border-gray-700 dark:hover:bg-blue-600"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-2 text-sm font-medium transition-colors cursor-pointer hover:bg-blue-600 hover:text-white sm:px-4 dark:border-gray-700 dark:hover:bg-blue-600"
               >
-                Logout
+                <LogOut className="h-4 w-4 sm:hidden" />
+                <span className="hidden sm:inline">Logout</span>
+                <span className="sr-only sm:hidden">Logout</span>
               </button>
             </>
           ) : (

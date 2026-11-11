@@ -113,8 +113,8 @@ export default function Checkout() {
     <>
       <Navbar />
 
-      <main className="mx-auto max-w-4xl px-6 py-10">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+        <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-100">
           Checkout
         </h1>
 
@@ -154,7 +154,7 @@ export default function Checkout() {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+          <div className="grid gap-6 md:grid-cols-[1fr_300px] md:gap-8">
             <section className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Order Items
@@ -165,8 +165,8 @@ export default function Checkout() {
                   key={item.product_id}
                   className="rounded-xl border border-gray-200 bg-white/65 p-5 text-gray-900 shadow-sm backdrop-blur-md dark:border-zinc-700 dark:bg-zinc-900/65 dark:text-gray-100"
                 >
-                  <div className="flex justify-between gap-4">
-                    <div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
                       <p className="font-semibold">{item.name}</p>
 
                       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -178,7 +178,7 @@ export default function Checkout() {
                       </p>
                     </div>
 
-                    <p className="font-semibold">
+                    <p className="shrink-0 font-semibold">
                       {formatCents(
                         BigInt(item.price_cents) * BigInt(item.quantity),
                       )}

@@ -138,8 +138,8 @@ export default function Cart() {
     <>
       <Navbar />
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <h1 className="mb-8 text-3xl font-bold">Your Cart</h1>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <h1 className="mb-5 text-2xl font-bold sm:mb-8 sm:text-3xl">Your Cart</h1>
 
         {loading ? (
           <p className="text-gray-700 dark:text-gray-300">
@@ -168,12 +168,12 @@ export default function Cart() {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+          <div className="grid gap-6 md:grid-cols-[1fr_300px] md:gap-8">
             <section className="space-y-4">
               {items.map((item) => (
                 <article
                   key={item.product_id}
-                  className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white/65 p-5 shadow-sm backdrop-blur-md transition-colors sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700 dark:bg-zinc-900/65"
+                  className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white/65 p-4 shadow-sm backdrop-blur-md transition-colors sm:flex-row sm:items-center sm:justify-between sm:p-5 dark:border-zinc-700 dark:bg-zinc-900/65"
                 >
                   <div>
                     <Link

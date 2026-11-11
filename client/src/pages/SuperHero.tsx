@@ -1,6 +1,6 @@
 export default function ShopHero() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-8 pt-12">
+    <section className="mx-auto max-w-7xl px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-12">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
@@ -9,7 +9,7 @@ export default function ShopHero() {
           </p>
         </div>
 
-        <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+        <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
           Find your next
           <span className="text-gray-400 dark:text-zinc-500"> favourite.</span>
         </h1>

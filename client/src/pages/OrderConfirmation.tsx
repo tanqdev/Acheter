@@ -17,11 +17,11 @@ export default function OrderConfirmation() {
     <>
       <Navbar />
 
-      <main className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <div className="rounded-2xl border border-gray-200 bg-white/65 p-8 text-gray-900 shadow-sm backdrop-blur-md dark:border-zinc-700 dark:bg-zinc-900/65 dark:text-gray-100">
+      <main className="mx-auto max-w-2xl px-4 py-10 text-center sm:px-6 sm:py-16">
+        <div className="rounded-2xl border border-gray-200 bg-white/65 p-5 text-gray-900 shadow-sm backdrop-blur-md sm:p-8 dark:border-zinc-700 dark:bg-zinc-900/65 dark:text-gray-100">
           <div className="text-5xl text-green-600 dark:text-green-400">✓</div>
 
-          <h1 className="mt-4 text-3xl font-bold">Order Confirmed!</h1>
+          <h1 className="mt-4 text-2xl font-bold sm:text-3xl">Order Confirmed!</h1>
 
           {order ? (
             <>

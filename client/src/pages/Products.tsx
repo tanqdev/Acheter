@@ -55,9 +55,9 @@ export default function Products() {
     <>
       <Navbar />
       <ShopHero />
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        <h1 className="mb-8 text-3xl font-bold">Products</h1>
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
+        <h1 className="mb-5 text-2xl font-bold sm:mb-8 sm:text-3xl">Products</h1>
+        <div className="grid gap-5 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

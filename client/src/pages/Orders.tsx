@@ -57,8 +57,8 @@ export default function Orders() {
     <>
       <Navbar />
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-100">
           My Orders
         </h1>
 
@@ -95,7 +95,7 @@ export default function Orders() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="rounded-xl border border-white/50 bg-white/65 p-6 text-gray-900 shadow-sm backdrop-blur-md transition-all hover:bg-white/75 dark:border-zinc-700 dark:bg-zinc-900/65 dark:text-gray-100 dark:hover:bg-zinc-900/80"
+                className="rounded-xl border border-white/50 bg-white/65 p-4 text-gray-900 shadow-sm backdrop-blur-md transition-all hover:bg-white/75 sm:p-6 dark:border-zinc-700 dark:bg-zinc-900/65 dark:text-gray-100 dark:hover:bg-zinc-900/80"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-300/50 pb-4 dark:border-zinc-700">
                   <div>

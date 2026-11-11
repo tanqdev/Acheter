@@ -128,7 +128,7 @@ export default function ProductDetails() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
       <Link
         to="/"
         className="mb-8 inline-block text-sm text-gray-600 hover:text-black"
@@ -136,10 +136,10 @@ export default function ProductDetails() {
         ← Back to Products
       </Link>
 
-      <div className="grid gap-10 md:grid-cols-2">
+      <div className="grid gap-7 md:grid-cols-2 md:gap-10">
         <div>
           <div
-            className="relative flex h-96 items-center justify-center overflow-hidden rounded-xl bg-gray-100 dark:bg-zinc-800"
+            className="relative flex h-80 items-center justify-center overflow-hidden rounded-xl bg-gray-100 sm:h-96 dark:bg-zinc-800"
             onMouseEnter={() => setIsImageHovered(true)}
             onMouseLeave={() => setIsImageHovered(false)}
           >
@@ -152,7 +152,7 @@ export default function ProductDetails() {
                   width={1024}
                   height={1024}
                   onError={() => setImageError(true)}
-                  className={`absolute inset-0 h-full w-full object-contain p-6 transition-opacity duration-300 ${
+                  className={`absolute inset-0 h-full w-full object-contain p-4 sm:p-6 transition-opacity duration-300 ${
                     showHoverImage ? "opacity-0" : "opacity-100"
                   }`}
                 />
@@ -165,7 +165,7 @@ export default function ProductDetails() {
                     width={1024}
                     height={1024}
                     onError={() => setImageError(true)}
-                    className={`absolute inset-0 h-full w-full object-contain p-6 transition-opacity duration-300 ${
+                    className={`absolute inset-0 h-full w-full object-contain p-4 sm:p-6 transition-opacity duration-300 ${
                       showHoverImage ? "opacity-100" : "opacity-0"
                     }`}
                   />
@@ -222,7 +222,7 @@ export default function ProductDetails() {
         </div>
 
         <div>
-          <h1 className="text-4xl font-bold">{product.name}</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">{product.name}</h1>
 
           <p className="mt-4 text-2xl font-semibold">
             {formatCents(product.price_cents)}

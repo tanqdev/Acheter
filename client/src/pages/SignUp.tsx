@@ -27,10 +27,10 @@ export default function SignUp() {
     }
   }
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 bg-neutral-950 text-white">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8 bg-neutral-950 text-white sm:px-6">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md p-9 shadow-sm bg-neutral-900 border border-[#333333] rounded-[9px]"
+        className="w-full max-w-md p-6 shadow-sm bg-neutral-900 border border-[#333333] rounded-[9px] sm:p-9"
       >
         <h1 className="text-3xl font-bold">Sign Up</h1>
         <div className="mt-6 ">
