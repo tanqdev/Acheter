@@ -23,6 +23,7 @@ export default function Cart() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [updatingProductId, setUpdatingProductId] = useState<number | null>(
     null,
   );
@@ -31,6 +32,7 @@ export default function Cart() {
   const fetchCart = useCallback(async () => {
     try {
       setError("");
+      setNeedsLogin(false);
 
       const response = await fetch(`${API_URL}/cart`, {
         credentials: "include",
@@ -40,7 +42,8 @@ export default function Cart() {
       const data: CartResponse = await response.json();
 
       if (response.status === 401) {
-        navigate("/login");
+        setNeedsLogin(true);
+        setItems([]);
         return;
       }
 
@@ -55,7 +58,7 @@ export default function Cart() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     void fetchCart();
@@ -80,7 +83,7 @@ export default function Cart() {
       const data = await response.json();
 
       if (response.status === 401) {
-        navigate("/login");
+        setNeedsLogin(true);
         return;
       }
 
@@ -110,7 +113,7 @@ export default function Cart() {
       const data = await response.json();
 
       if (response.status === 401) {
-        navigate("/login");
+        setNeedsLogin(true);
         return;
       }
 
@@ -145,6 +148,21 @@ export default function Cart() {
           <p className="text-gray-700 dark:text-gray-300">
             Loading your cart...
           </p>
+        ) : needsLogin ? (
+          <div className="mx-auto w-full max-w-md rounded-xl border border-gray-200 bg-white/65 p-6 text-center shadow-sm backdrop-blur-md dark:border-zinc-700 dark:bg-zinc-900/65">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Sign in to view your cart
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              Your cart is saved to your account.
+            </p>
+            <Link
+              to="/login"
+              className="mt-4 inline-block rounded-lg bg-black px-5 py-2 text-white transition hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+            >
+              Sign In
+            </Link>
+          </div>
         ) : error && items.length === 0 ? (
           <div>
             <p className="text-red-600">{error}</p>
