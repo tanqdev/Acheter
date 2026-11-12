@@ -142,7 +142,9 @@ export default function Cart() {
       <Navbar />
 
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
-        <h1 className="mb-5 text-2xl font-bold sm:mb-8 sm:text-3xl">Your Cart</h1>
+        <h1 className="mb-5 text-2xl font-bold sm:mb-8 sm:text-3xl">
+          Your Cart
+        </h1>
 
         {loading ? (
           <p className="text-gray-700 dark:text-gray-300">
@@ -206,7 +208,7 @@ export default function Cart() {
                     </p>
 
                     <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">
-                      Subtotal: ₹
+                      Subtotal:
                       {formatCents(
                         BigInt(item.price_cents) * BigInt(item.quantity),
                       )}
